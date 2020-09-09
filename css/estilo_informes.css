@@ -1,0 +1,39 @@
+.logo{
+	width: 160px;
+	height: 150px;
+	position: relative;
+	margin-left: 200px;
+}
+
+.bordes{
+	font-size: 40px;
+	width: 170px;
+	margin-left: 380px;
+	margin-top: -128px;
+	margin-bottom: 20px;
+	position: relative;
+	color: #F53333;
+	cursor:pointer;
+	border: 3px solid #ff0000;
+	padding: 10px;
+	padding-left: 100px;
+	padding-right: 30px;
+}
+
+#save-pdf{
+	background:#28282e;
+	color: #8198ff;
+	border-radius:5px;
+	cursor:pointer;
+	border-bottom: 3px solid rgba(0, 0, 0,.5);
+	width:auto;
+	height: 30px;
+	text-decoration:none;
+	text-align:center;
+	position: relative;
+}
+#save-pdf:hover{
+	color:white;
+	border-bottom: 5px solid rgba(0, 0, 0,.5);
+}
+

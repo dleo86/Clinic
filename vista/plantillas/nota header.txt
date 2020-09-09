@@ -1,0 +1,1 @@
+carga el css que NO pertenece a la carpeta vista

@@ -1,0 +1,111 @@
+<?php session_start();
+require_once 'funciones/funciones.php';
+if(!isset($_SESSION['usuario'])){
+	header('Location: login.php');
+}
+
+
+if($_SERVER['REQUEST_METHOD']=='POST'){
+	$usuario = filter_var(strtolower($_POST['usuario']),FILTER_SANITIZE_STRING);
+	$password = $_POST['password'];
+	$password2 = $_POST['password2'];
+	$ingreso = $_POST['ingreso'];
+    $roll = $_POST['roll'];
+    //PERSONA
+    $nombre = filter_var(strtolower($_POST['nombres']),FILTER_SANITIZE_STRING);
+	$apellidos = $_POST['apellidos'];
+	$fechaNac = $_POST['fechaNac'];
+	$correo =  $_POST['correo'];
+	$dni = $_POST['dni'];
+	$telefono =  $_POST['telefono'];
+	//DOMICILIO
+	$calle = $_POST['calle'];
+	$numero = $_POST['numero'];
+	$piso = $_POST['piso'];
+	$departamento = $_POST['departamento'];
+	$codPostal = $_POST['codPostal'];
+	//LOCALIDAD
+	$loc = $_POST['loc'];
+	$errores ='';
+	$errores .= ControlUsuario($usuario);
+	if(empty($usuario) or empty($password)){
+		$errores.= '<li>Por favor rellena todos los dados correctamente</li>';
+	}
+	else{
+		try{
+			$conexion = new PDO('mysql:host=localhost;dbname=clinic','root',''); //2012116664
+		}catch(PDOException $e){
+			echo "ERROR: " . $e->getMessge();
+			die();
+		}
+		$statement = $conexion -> prepare(
+			'SELECT * FROM usuarios WHERE usuario = :usuario LIMIT 1');
+		$statement ->execute(array(':usuario'=>$usuario));
+		$resultado= $statement->fetch();
+
+		if($resultado != false){
+			$errores .='<li>El nombre de usuario ya existe</li>';
+		}
+		if (strlen($password)<3){
+           $errores.='El password debe ser mayor a 3 caracteres <br />';
+       }
+		$password = hash('sha512',$password);
+		$password2 = hash('sha512',$password2);
+		if($password2 != $password){
+			$errores .= '<li>Las contraseñas no son iguales</li>';
+			echo $errores;
+		}	
+       if (strlen($usuario)<3){
+           $errores.='El usuario debe ser mayor a 3 caracteres <br />';
+           echo $errores;
+       }
+	}
+
+	if($errores==''){
+		$statement3 = $conexion->prepare(
+		'INSERT INTO domicilio (idDomicilio, calle, numero, piso, departamento, codPostal,idLocalidad)
+		values(null,:calle,:numero,:piso,:departamento,:codPostal, :loc)');
+
+		$statement3 ->execute(array(
+		':calle'=> $calle,
+		':numero'=>$numero,
+		':piso'=>$piso,
+		':departamento'=>$departamento,
+		':codPostal'=>$codPostal,
+		':loc'=>$loc
+		));
+
+	}
+
+	if($errores==''){
+		$statement2 = $conexion->prepare(
+		'INSERT INTO persona (idPersona,nombre,apellido,fechaNacimiento,telefono,email,dni,idDomicilio)
+		values(null, :nombre,:apellidos,:fechaNac,:telefono,:correo,:dni, (SELECT MAX(idDomicilio) FROM domicilio))');
+
+		$statement2 ->execute(array(
+		':nombre'=> $nombre,
+		':apellidos'=>$apellidos,
+		':fechaNac'=>$fechaNac,
+		':telefono'=>$telefono,
+		':correo'=>$correo,
+		':dni'=>$dni
+		));
+
+	}
+
+	if($errores==''){
+		$statement = $conexion->prepare(
+			'INSERT INTO usuarios (id, usuario, pass, fechaIngreso, idPersona, Roll )VALUES
+            (default,:usuario,:pass, :ingreso,(SELECT MAX(idPersona) FROM persona), :roll)');
+		$statement-> execute(array(
+			':usuario' => $usuario,
+			':pass'=> $password2,
+			':ingreso'=>$ingreso,
+            ':roll'=> $roll
+			));
+		header('Location: usuarios.php');
+	}
+}
+require 'vista/registro_vista.php';
+
+?>
